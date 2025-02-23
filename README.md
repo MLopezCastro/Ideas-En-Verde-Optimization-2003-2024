@@ -37,7 +37,7 @@ This repository contains the data analysis and operational sustainability projec
 
 This document outlines the complete process of integrating and analyzing historical client restocking data from 2003 to 2024. It details the transformation of data from an initial CSV file to its consolidation in SQL Server, its optimization, and integration with Power BI for visual analysis. Challenges encountered and solutions applied are also documented.
 
-📂 1. Data Source
+# 📂 1. Data Source
 
 The original data came from a CSV file containing records from 2003 to 2023, with columns for each client's cost and service metrics. The file received was:
 
@@ -45,7 +45,7 @@ tabla_larga_corregida_manual_2024.csv (including 2024 data and new clients)
 
 The goal was to integrate this data into SQL Server, transform it into an analysis-friendly format, and visualize it in Power BI.
 
-🔄 2. Data Transformation in SQL Server
+# 🔄 2. Data Transformation in SQL Server
 
 2.1. Importing the CSV into SQL Server
 
