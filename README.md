@@ -31,49 +31,45 @@ This repository contains the data analysis and operational sustainability projec
 
 -------------------------------------
 
-README - Integración de Datos de 2003-2024 y Análisis en Power BI
+README - Data Integration from 2003-2024 and Power BI Analysis
+📌 Overview
+This document outlines the complete process of integrating and analyzing historical client restocking data from 2003 to 2024. It details the transformation of data from an initial CSV file to its consolidation in SQL Server, its optimization, and integration with Power BI for visual analysis. Challenges encountered and solutions applied are also documented.
 
-📌 Descripción General
+📂 1. Data Source
+The original data came from a CSV file containing records from 2003 to 2023, with columns for each client's cost and service metrics. The file received was:
 
-Este documento detalla el proceso completo de integración y análisis de datos históricos de reposiciones por cliente desde 2003 hasta 2024. Se explica la transformación de datos desde un archivo CSV inicial hasta su consolidación en SQL Server, su optimización y la integración con Power BI para el análisis visual. También se documentan los problemas encontrados y las soluciones aplicadas.
+tabla_larga_corregida_manual_2024.csv (including 2024 data and new clients)
+The goal was to integrate this data into SQL Server, transform it into an analysis-friendly format, and visualize it in Power BI.
 
-📂 1. Origen de los Datos
-
-Los datos originales provienen de un archivo CSV con registros de 2003 a 2023, con columnas para cada cliente y sus métricas de costos y servicios. Se recibió un archivo llamado:
-
-tabla_larga_corregida_manual_2024.csv (Incluyendo datos de 2024 y nuevos clientes)
-
-El objetivo era integrar estos datos en una base SQL Server, transformarlos en un formato adecuado para análisis y visualización en Power BI.
-
-🔄 2. Transformación de Datos en SQL Server
-
-2.1. Importación del CSV a SQL Server
-
-Se importó tabla_larga_corregida_manual_2024.csv en SQL Server usando SSMS.
-
-Se configuró Date como DATETIME y las demás columnas como FLOAT, asegurando que los valores nulos se mantuvieran correctamente.
-
-Se creó la tabla:
-
+🔄 2. Data Transformation in SQL Server
+2.1. Importing the CSV into SQL Server
+The file tabla_larga_corregida_manual_2024.csv was imported into SQL Server using SSMS.
+The Date column was set to DATETIME, and other columns to FLOAT, ensuring that null values were maintained correctly.
+The initial table was created as follows:
+sql
+Copy
+Edit
 CREATE TABLE tabla_larga_corregida_manual_2024 (
     Date DATETIME,
     REAL_1 FLOAT,
     REAL_1_SERV_1 FLOAT,
     VALOR_1 FLOAT,
     VALOR_1_SERV_1 FLOAT,
-    ... -- (hasta el cliente 68)
+    ... -- (up to client 68)
 );
+2.2. Creating a Backup Copy
+Before applying transformations, a backup of the table was created:
 
-2.2. Creación de una Copia de Resguardo
-
-Antes de realizar transformaciones, se hizo un backup de la tabla:
-
+sql
+Copy
+Edit
 SELECT * INTO tabla_larga_cliente_2024_backup FROM tabla_larga_corregida_manual_2024;
+2.3. Transforming into a "Long Table" Format
+Since the imported table was in a wide format (each client had separate columns), it was transformed into a long format:
 
-2.3. Transformación a Formato "Tabla Larga"
-
-Dado que la tabla importada estaba en formato ancho (cada cliente en una columna), se transformó a formato largo:
-
+sql
+Copy
+Edit
 SELECT Date,
        Métrica = UNPIVOTED.ColumnName,
        Valor = UNPIVOTED.Value,
@@ -83,110 +79,84 @@ FROM tabla_larga_corregida_manual_2024
 UNPIVOT (
     Value FOR ColumnName IN ([REAL_1], [REAL_1_SERV_1], [VALOR_1], [VALOR_1_SERV_1], ... [REAL_68], [VALOR_68_SERV_68])
 ) AS UNPIVOTED;
+⚙️ 3. Table Adjustments for Power BI
+3.1. Removing Unnecessary Columns
+Since Project 1 only used REAL_X/SERV_X and VALOR_X/SERV_X, the extra columns were dropped:
 
-⚙️ 3. Ajustes en la Tabla para Power BI
-
-3.1. Eliminación de Columnas No Necesarias
-
-Dado que en el Proyecto 1 solo se usaban REAL_X/SERV_X y VALOR_X/SERV_X, se eliminaron columnas sobrantes:
-
+sql
+Copy
+Edit
 ALTER TABLE tabla_larga_cliente_2024
 DROP COLUMN REAL_1, VALOR_1, REAL_2, VALOR_2, ...;
+3.2. Correcting the Metric Format
+Column names were adjusted to match Project 1, replacing _ with /:
 
-3.2. Corrección del Formato de Métricas
-
-Se ajustaron los nombres de las métricas para coincidir con Proyecto 1, reemplazando "_" por "/":
-
+sql
+Copy
+Edit
 UPDATE tabla_larga_cliente_2024
 SET Métrica = REPLACE(Métrica, '_', '/');
+3.3. Creating the "NumericPart" Column
+A new column was added to extract the numeric client ID:
 
-3.3. Creación de la Columna "NumericPart"
-
-Se extrajo el número de cliente en una nueva columna:
-
+sql
+Copy
+Edit
 ALTER TABLE tabla_larga_cliente_2024
 ADD NumericPart INT;
 
 UPDATE tabla_larga_cliente_2024
 SET NumericPart = CAST(SUBSTRING(Cliente, 9, LEN(Cliente)) AS INT);
-
-📊 4. Integración en Power BI
-
-4.1. Conexión de Power BI a SQL Server
-
-Se configuró la conexión de Power BI con la tabla tabla_larga_cliente_2024:
+📊 4. Integration in Power BI
+4.1. Connecting Power BI to SQL Server
+Power BI was connected to tabla_larga_cliente_2024 through the following steps:
 
 Get Data → SQL Server
+Enter server and database details
+Select the tabla_larga_cliente_2024 table
+Load data into Power Query
+4.2. Adjustments in Power Query
+Removed "Changed Type" steps to prevent incorrect data conversions.
+Applied filters to only select REAL_X/SERV_X and VALOR_X/SERV_X metrics.
+Verified the correct representation of null values.
+Created relationships with other metric tables.
+4.3. Creating the Graph in Power BI
+X-Axis: Date
+Values: REAL_X/SERV_X and VALOR_X/SERV_X
+Legend: Cliente
+Ensured data consistency with Project 1.
+🛠️ 5. Issues and Solutions
+Issue	Solution
+Null values were mistakenly removed in SQL	Structure was reviewed, and original null values were preserved
+Incorrect metric format (e.g., "REAL_1 SERV_1")	Fixed using UPDATE tabla SET Métrica = REPLACE(Métrica, '_', '/')
+Values appeared as zeros in Power BI	Removed "Changed Type" transformation in Power Query
+Excessive decimal places in Power BI	Adjusted data type in SQL Server for proper precision
+📌 6. Conclusion and Next Steps
+This document outlines the entire workflow from integrating new data to visualizing it in Power BI. Errors in metric naming, formatting, and Power Query transformations were resolved, leading to a fully aligned integration with Project 1.
 
-Ingresar el servidor y base de datos
+Next Steps:
 
-Seleccionar la tabla tabla_larga_cliente_2024
+Optimize Power BI to improve data loading efficiency.
+Automate SQL Server updates with a scheduled pipeline.
+Explore predictive modeling to anticipate trends in restocking.
+📂 References
+Database: SQL Server (SSMS)
+Visualization: Power BI
+Data Source: tabla_larga_corregida_manual_2024.csv
+📌 Last updated: 2025-02-23
 
-Cargar los datos en Power Query
+🔹 If needed, we can also create a Jupyter Notebook documenting the entire process, including SQL queries and Power BI transformations. Let me know if you’d like that! 🚀
 
-4.2. Ajustes en Power Query
 
-Se eliminaron pasos de "Changed Type" para evitar conversiones erróneas.
 
-Se aplicaron filtros para seleccionar solo las métricas REAL_X/SERV_X y VALOR_X/SERV_X.
 
-Se verificó la correcta representación de valores nulos.
 
-Se creó una relación con otras tablas de métricas.
 
-4.3. Creación del Gráfico en Power BI
 
-Eje X: Date
 
-Valores: REAL_X/SERV_X y VALOR_X/SERV_X
 
-Leyenda: Cliente
 
-Se verificó que los datos fueran consistentes con el Proyecto 1.
 
-🛠️ 5. Problemas y Soluciones
-
-Problema
-
-Solución
-
-Se eliminaron valores nulos en SQL sin querer
-
-Se revisó la estructura y se preservaron los valores originales
-
-Formato incorrecto en los nombres de métricas
-
-Se corrigió con UPDATE tabla SET Métrica = REPLACE(Métrica, '_', '/')
-
-En Power BI los valores se veían como ceros
-
-Se eliminó la transformación de tipo de datos en Power Query
-
-Exceso de decimales en Power BI
-
-Se ajustó el tipo de dato en SQL para mantener precisión adecuada
-
-📌 6. Conclusión y Próximos Pasos
-
-Este documento detalla el flujo completo desde la integración de nuevos datos hasta la visualización en Power BI. Se resolvieron errores en nombres de métricas, problemas de formato y se logró una integración 100% alineada con Proyecto 1.
-
-Próximos pasos:
-
-Optimización de Power BI para que la carga de datos sea más eficiente.
-
-Automatización de la carga de datos en SQL Server con un pipeline de actualización.
-
-Exploración de modelos de predicción para anticipar tendencias en reposiciones.
-
-📂 Referencias
-
-Base de Datos: SQL Server (SSMS)
-
-Visualización: Power BI
-
-Fuente de Datos: tabla_larga_corregida_manual_2024.csv
-
-📌 Última actualización: 2025-02-23
 
 
 
