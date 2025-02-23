@@ -55,62 +55,41 @@ The Date column was set to DATETIME, and other columns to FLOAT, ensuring that n
 
 The initial table was created as follows:
 
-CREATE TABLE tabla_larga_corregida_manual_2024 (
-    Date DATETIME,
-    REAL_1 FLOAT,
-    REAL_1_SERV_1 FLOAT,
-    VALOR_1 FLOAT,
-    VALOR_1_SERV_1 FLOAT,
-    ... -- (up to client 68)
-);
+![image](https://github.com/user-attachments/assets/eb322a8e-7e83-4137-bb7c-63bd94c7ab22)
 
 2.2. Creating a Backup Copy
 
 Before applying transformations, a backup of the table was created:
 
-SELECT * INTO tabla_larga_cliente_2024_backup FROM tabla_larga_corregida_manual_2024;
+![image](https://github.com/user-attachments/assets/8862af3f-fc8d-429f-8ac5-8010272c568d)
 
 2.3. Transforming into a "Long Table" Format
 
 Since the imported table was in a wide format (each client had separate columns), it was transformed into a long format:
 
-SELECT Date,
-       Métrica = UNPIVOTED.ColumnName,
-       Valor = UNPIVOTED.Value,
-       Cliente = 'Cliente ' + CAST(SUBSTRING(UNPIVOTED.ColumnName, CHARINDEX('_', UNPIVOTED.ColumnName) + 1, LEN(UNPIVOTED.ColumnName)) AS VARCHAR)
-INTO tabla_larga_cliente_2024
-FROM tabla_larga_corregida_manual_2024
-UNPIVOT (
-    Value FOR ColumnName IN ([REAL_1], [REAL_1_SERV_1], [VALOR_1], [VALOR_1_SERV_1], ... [REAL_68], [VALOR_68_SERV_68])
-) AS UNPIVOTED;
+![image](https://github.com/user-attachments/assets/9ff7ee5f-12bf-4570-a597-22ed74f291e7)
 
-⚙️ 3. Table Adjustments for Power BI
+# ⚙️ 3. Table Adjustments for Power BI
 
 3.1. Removing Unnecessary Columns
 
 Since Project 1 only used REAL_X/SERV_X and VALOR_X/SERV_X, the extra columns were dropped:
 
-ALTER TABLE tabla_larga_cliente_2024
-DROP COLUMN REAL_1, VALOR_1, REAL_2, VALOR_2, ...;
+![image](https://github.com/user-attachments/assets/29161212-8f44-4070-aa1a-202182c87a78)
 
 3.2. Correcting the Metric Format
 
 Column names were adjusted to match Project 1, replacing _ with /:
 
-UPDATE tabla_larga_cliente_2024
-SET Métrica = REPLACE(Métrica, '_', '/');
+![image](https://github.com/user-attachments/assets/c3dcecaf-c3a3-4b7f-a693-021e74722ebd)
 
 3.3. Creating the "NumericPart" Column
 
 A new column was added to extract the numeric client ID:
 
-ALTER TABLE tabla_larga_cliente_2024
-ADD NumericPart INT;
+![image](https://github.com/user-attachments/assets/0cf9385f-8624-4c64-98cd-8ad527ebf111)
 
-UPDATE tabla_larga_cliente_2024
-SET NumericPart = CAST(SUBSTRING(Cliente, 9, LEN(Cliente)) AS INT);
-
-📊 4. Integration in Power BI
+# 📊 4. Integration in Power BI
 
 4.1. Connecting Power BI to SQL Server
 
