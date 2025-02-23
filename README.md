@@ -125,25 +125,7 @@ Ensured data consistency with Project 1.
 
 🛠️ 5. Issues and Solutions
 
-Issue
-
-Solution
-
-Null values were mistakenly removed in SQL
-
-Structure was reviewed, and original null values were preserved
-
-Incorrect metric format (e.g., "REAL_1 SERV_1")
-
-Fixed using UPDATE tabla SET Métrica = REPLACE(Métrica, '_', '/')
-
-Values appeared as zeros in Power BI
-
-Removed "Changed Type" transformation in Power Query
-
-Excessive decimal places in Power BI
-
-Adjusted data type in SQL Server for proper precision
+![image](https://github.com/user-attachments/assets/85c86a7e-d910-4559-a4e2-e871a184c7a4)
 
 📌 6. Conclusion and Next Steps
 
