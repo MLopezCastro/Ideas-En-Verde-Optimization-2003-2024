@@ -149,8 +149,41 @@ Data Source: tabla_larga_corregida_manual_2024.csv
 
 📌 Last updated: 2025-02-23
 
+-----------------
 
+## 📌 Updating the Dataset: Adding 2025 Data to SQL Server
+To ensure that Power BI reflects the most up-to-date information, we need to add the 2025 data to the long table format in SQL Server. The table that connects to Power BI is:
 
+## 📌 tabla_larga_cliente_2024_filtrada
+
+Since this table is in long format, the new data for 2025 must be structured correctly before being inserted.
+
+## 📥 Step 1: Prepare the 2025 Data
+If the 2025 data is in a wide format (like the original CSV or Excel files), it must first be transformed into a long format before loading it into SQL.
+You can use Excel Power Query, Python (Pandas), or a SQL pivot/unpivot query to perform this transformation.
+
+## 🔄 Step 2: Transform the Data to Match SQL Table Format
+The final format should have the following columns:
+
+![image](https://github.com/user-attachments/assets/93e18efb-a692-47b0-9819-1beda544eb44)
+
+## ⬆️ Step 3: Insert the 2025 Data into SQL Server
+Once the 2025 data is structured correctly, insert it into tabla_larga_cliente_2024_filtrada using an SQL INSERT INTO statement.
+
+📌 SQL Query Example:
+
+![image](https://github.com/user-attachments/assets/a666ac07-c452-46e7-a6cb-72729cfa1bd8)
+
+## 🔄 Step 4: Refresh Power BI
+Once the data is inserted into SQL Server, simply refresh Power BI to include the new 2025 records automatically.
+
+## 🚀 Summary
+✔ Prepare the 2025 data in a long format.
+✔ Ensure it matches the column structure of tabla_larga_cliente_2024_filtrada.
+✔ Insert the data into SQL Server.
+✔ Refresh Power BI to update the dashboard.
+
+📌 By following these steps, we can keep the dataset updated without affecting existing reports or connections. 🚀🔥
 
 
 
